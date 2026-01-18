@@ -18,7 +18,7 @@ export default function Navbar() {
     const navLinks = [
         { name: "Features", href: "#features" },
         { name: "Specs", href: "#specs" },
-        { name: "Reviews", href: "#" },
+        { name: "Reviews", href: "#reviews" },
     ];
 
     return (
@@ -28,8 +28,8 @@ export default function Navbar() {
                 animate={{ y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                        ? "bg-black/80 backdrop-blur-md border-b border-white/10 py-4"
-                        : "bg-transparent py-6"
+                    ? "bg-black/80 backdrop-blur-md border-b border-white/10 py-4"
+                    : "bg-transparent py-6"
                     }`}
             >
                 <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
