@@ -21,7 +21,10 @@ export default function LaptopScroll() {
         offset: ["start start", "end end"],
     });
 
-    const currentIndex = useTransform(scrollYProgress, [0, 1], [1, frameCount]);
+    // Modified Logic:
+    // Animation finishes at 85% of the scroll container.
+    // The frames stay static at the last frame from 85% to 100%.
+    const currentIndex = useTransform(scrollYProgress, [0, 0.85], [1, frameCount]);
 
     // Preload images
     useEffect(() => {
@@ -117,22 +120,19 @@ export default function LaptopScroll() {
 
 
     // Text Overlays Animation Logic
-    // Defining opacity based on scrollYProgress
-
-    // 0-20%: Title
     const opacityTitle = useTransform(scrollYProgress, [0, 0.1, 0.2], [1, 1, 0]);
     const yTitle = useTransform(scrollYProgress, [0, 0.2], [0, -50]);
 
-    // 20-40%: Precision Engineering
     const opacityP2 = useTransform(scrollYProgress, [0.15, 0.25, 0.35, 0.45], [0, 1, 1, 0]);
     const xP2 = useTransform(scrollYProgress, [0.15, 0.25], [-100, 0]);
 
-    // 45-75%: Specs (Split)
-    const opacitySpecs = useTransform(scrollYProgress, [0.4, 0.5, 0.7, 0.8], [0, 1, 1, 0]);
+    const opacitySpecs = useTransform(scrollYProgress, [0.4, 0.5, 0.65, 0.75], [0, 1, 1, 0]);
 
-    // 85-100%: CTA
-    const opacityCTA = useTransform(scrollYProgress, [0.8, 0.9, 1], [0, 1, 1]);
-    const scaleCTA = useTransform(scrollYProgress, [0.8, 0.9], [0.8, 1]);
+    // CTA / "Gaming Beast" logic adjustment
+    // Finishes fading in at 0.85 (when scroll stops)
+    // Stays visible until the very end (1.0)
+    const opacityCTA = useTransform(scrollYProgress, [0.8, 0.85, 0.98, 1], [0, 1, 1, 0]);
+    const scaleCTA = useTransform(scrollYProgress, [0.8, 0.85], [0.8, 1]);
 
 
     if (!loaded) {
@@ -147,7 +147,7 @@ export default function LaptopScroll() {
     }
 
     return (
-        <div ref={containerRef} className="h-[400vh] relative">
+        <div ref={containerRef} className="h-[700vh] relative">
             <div className="sticky top-0 h-screen w-full overflow-hidden">
                 <canvas
                     ref={canvasRef}
