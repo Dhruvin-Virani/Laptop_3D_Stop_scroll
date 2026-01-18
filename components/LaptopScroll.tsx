@@ -73,19 +73,21 @@ export default function LaptopScroll() {
         let drawWidth, drawHeight, offsetX, offsetY;
 
         if (canvasRatio > imageRatio) {
+            // "Contain" logic: Canvas is wider -> Fit by Height
+            drawHeight = canvas.height;
+            drawWidth = canvas.height * imageRatio;
+            offsetX = (canvas.width - drawWidth) / 2;
+            offsetY = 0;
+        } else {
+            // "Contain" logic: Canvas is taller -> Fit by Width
             drawWidth = canvas.width;
             drawHeight = canvas.width / imageRatio;
             offsetX = 0;
             offsetY = (canvas.height - drawHeight) / 2;
-        } else {
-            drawWidth = canvas.height * imageRatio;
-            drawHeight = canvas.height;
-            offsetX = (canvas.width - drawWidth) / 2;
-            offsetY = 0;
         }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#151515"; // Seamless blending
+        ctx.fillStyle = "#151515"; // Background
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
     };
@@ -104,11 +106,18 @@ export default function LaptopScroll() {
 
 
     // Handle resize
+    // Handle resize - Match container size exactly to avoid stretching
     useEffect(() => {
         const handleResize = () => {
-            if (canvasRef.current) {
-                canvasRef.current.width = window.innerWidth;
-                canvasRef.current.height = window.innerHeight;
+            if (canvasRef.current && containerRef.current) {
+                // We want the canvas to match the sticky container dimensions
+                // The sticky container handles the viewable area
+                const parent = canvasRef.current.parentElement;
+                if (parent) {
+                    canvasRef.current.width = parent.clientWidth;
+                    canvasRef.current.height = parent.clientHeight;
+                }
+
                 // Re-render current frame after resize
                 render(currentIndex.get());
             }
@@ -129,10 +138,10 @@ export default function LaptopScroll() {
     const opacitySpecs = useTransform(scrollYProgress, [0.4, 0.5, 0.65, 0.75], [0, 1, 1, 0]);
 
     // CTA / "Gaming Beast" logic adjustment
-    // Finishes fading in at 0.85 (when scroll stops)
-    // Stays visible until the very end (1.0)
-    const opacityCTA = useTransform(scrollYProgress, [0.8, 0.85, 0.98, 1], [0, 1, 1, 0]);
-    const scaleCTA = useTransform(scrollYProgress, [0.8, 0.85], [0.8, 1]);
+    // Appear earlier (during the end of scroll)
+    // Overlapping with the frames 100-120 approx
+    const opacityCTA = useTransform(scrollYProgress, [0.65, 0.8, 1], [0, 1, 1]);
+    const scaleCTA = useTransform(scrollYProgress, [0.65, 0.8, 1], [0.8, 1, 1]);
 
 
     if (!loaded) {
@@ -146,16 +155,17 @@ export default function LaptopScroll() {
         );
     }
 
+    // Offset for the fixed Navbar (approx 80px or 5rem) to prevent overlap
     return (
-        <div ref={containerRef} className="h-[700vh] relative">
-            <div className="sticky top-0 h-screen w-full overflow-hidden">
+        <div ref={containerRef} className="h-[700vh] relative pt-20">
+            <div className="sticky top-20 h-[calc(100vh-5rem)] w-full overflow-hidden">
                 <canvas
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full object-cover"
                 />
 
                 {/* Overlays Container */}
-                <div className="absolute inset-0 pointer-events-none flex flex-col justify-center">
+                <div className="absolute inset-0 pointer-events-none flex flex-col justify-center z-10">
 
                     {/* Section 1: Title */}
                     <motion.div style={{ opacity: opacityTitle, y: yTitle }} className="absolute inset-0 flex items-center justify-center">
@@ -194,9 +204,9 @@ export default function LaptopScroll() {
                     </motion.div>
 
                     {/* Section 4: CTA */}
-                    <motion.div style={{ opacity: opacityCTA, scale: scaleCTA }} className="absolute inset-0 flex items-center justify-center">
+                    <motion.div style={{ opacity: opacityCTA, scale: scaleCTA }} className="absolute inset-0 flex items-center justify-center z-20">
                         <div className="text-center">
-                            <h2 className="text-5xl md:text-8xl font-bold uppercase tracking-tighter mb-8 glow-text">
+                            <h2 className="text-5xl md:text-8xl font-bold uppercase tracking-tighter mb-8 drop-shadow-[0_0_25px_rgba(255,255,255,0.3)]">
                                 Gaming Beast
                             </h2>
                             <button className="pointer-events-auto px-8 py-3 bg-white text-black font-bold text-lg hover:bg-white/90 transition-colors uppercase tracking-widest">
